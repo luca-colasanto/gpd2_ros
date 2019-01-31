@@ -1,0 +1,57 @@
+<launch>
+
+  <node name="pcd_to_pointcloud" pkg="pcl_ros" type="pcd_to_pointcloud" output="screen" args="/home/luca/point_clouds/mug_D415.pcd 0.1">
+    <param name="frame_id" value="/map"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+  <node pkg="nodelet" type="nodelet" name="passthrough" args="load pcl/PassThrough pcl_manager" output="screen">
+      <remap from="~input" to="/camera/depth_registered/points" />
+      <remap from="~output" to="/cloud_filtered" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0.2
+        filter_limit_max: 1.0
+        filter_limit_negative: false
+      </rosparam>
+  </node>
+
+  <node name="detect_grasps" pkg="gpd_ros" type="detect_grasps" output="screen">
+
+    <!-- If sequential importance sampling is used (default: false) -->
+    <!--
+    <param name="use_importance_sampling" value="false" />
+    -->
+
+    <!-- What type of point cloud is used and what ROS topic it comes from -->
+    <param name="cloud_type" value="0" /> <!-- 0: PointCloud2, 1: CloudIndexed, 2: CloudSamples -->
+
+    <param name="cloud_topic" value="/cloud_pcd" />
+
+    <!-- (optional) The ROS topic that the samples come from (default: an empty string) -->
+    <param name="samples_topic" value="" />
+
+    <!-- Filepath to the configuration file for GPD -->
+    <!-- <param name="config_file" value="/home/ur5/projects/gpd/cfg/ros_eigen_params.cfg" /> -->
+    <param name="config_file" value="/home/luca/gpd_repo/gpd2/cfg/ros_vino_params.cfg" />
+
+  </node>
+
+
+
+<!--
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+    <node pkg="nodelet" type="nodelet" name="passthrough" args="load pcl/PassThrough pcl_manager" output="screen">
+      <remap from="~input" to="/cloud_pcd" />
+      <remap from="~output" to="/cloud_filtered" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0.0
+        filter_limit_max: 5.25
+        filter_limit_negative: false
+      </rosparam>
+    </node>
+  </node>
+-->
+
+</launch>
